@@ -4,5 +4,5 @@
 class Player:
     def __init__(self, name, location):
         self.name = name
-        self.location = location
+        self.current_room = location
         self.items = []

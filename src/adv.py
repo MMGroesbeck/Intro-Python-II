@@ -2,6 +2,8 @@ import sys
 import textwrap
 
 from room import Room
+from player import Player
+from item import Item
 
 # Declare all the rooms
 
@@ -41,7 +43,6 @@ room['treasure'].s_to = room['narrow']
 #
 
 # Make a new player object that is currently in the 'outside' room.
-from player import Player
 
 player1 = Player("Gorgik the Liberator", room["outside"])
 
@@ -57,16 +58,67 @@ player1 = Player("Gorgik the Liberator", room["outside"])
 # If the user enters "q", quit the game.
 
 while True:
-    for line in textwrap.wrap(player1.location.description):
+    for line in textwrap.wrap(player1.current_room.description):
         print(line)
-    cmd_input = input(">").split(" ")
-    if cmd_input[0] == "q":
+    if len(player1.current_room.items) > 0:
+        print("You see: \n")
+        print(f"{i.name}\n" for i in player1.current_room.items)
+    cmd_input = input(">").split(" ", 1)
+    cmd_start = cmd_input[0]
+    if cmd_start == "q":
         sys.exit()
-    elif cmd_input[0] in ["n", "e", "s", "w"]:
-        move_to = f"{cmd_input[0]}_to"
-        target_room = getattr(player1.location, move_to)
+    elif cmd_start in ["n", "e", "s", "w"]:
+        move_to = f"{cmd_start}_to"
+        target_room = getattr(player1.current_room, move_to)
         if target_room:
-            player1.location = target_room
-            print(f"\n{player1.location.name}:")
+            player1.current_room = target_room
+            print(f"\n{player1.current_room.name}:")
         else:
             print("You cannot go that way.")
+        continue
+    # TO DO: spin of item name parser into separate function (maybe class method in another file?)
+    # Then use that in both "get" and "drop"
+    elif cmd_start == "get" or "take":
+        if len(cmd_input) == 1:
+            print("What would you like to take?")
+            continue
+        else:
+            to_get = cmd_input[1]
+            items_found = []
+            for i in player1.current_room.items:
+                if i.find(to_get) != -1:
+                    items_found.append(i)
+            if len(items_found) == 0:
+                print(f"You don't see a {to_get}.")
+                continue
+            elif len(items_found) > 1:
+                matches = "\n".join(items_found)
+                print(f"Please be more specific. You might mean:\n{matches}")
+                continue
+            else:
+                items_found[0].on_take()
+                player1.items.append(items_found[0])
+                player1.current_room.items.remove(items_found[0])
+                continue
+    elif cmd_start == "drop":
+        if len(cmd_input) == 1:
+            print("What would you like to drop?")
+            continue
+        else:
+            to_drop = cmd_input[1]
+            items_found = []
+            for i in player1.items:
+                if i.find(to_drop) != -1:
+                    items_found.append(i)
+            if len(items_found) == 0:
+                print(f"You don't have a {to_drop}.")
+                continue
+            elif len(items_found) > 1:
+                matches = "\n".join(items_found)
+                print(f"Please be more specific. You might mean:\n{matches}")
+                continue
+            else:
+                items_found[0].on_drop()
+                player1.items.remove(items_found[0])
+                player1.current_room.items.append(items_found[0])
+                continue
