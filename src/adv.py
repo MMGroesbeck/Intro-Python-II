@@ -1,3 +1,6 @@
+import sys
+import textwrap
+
 from room import Room
 
 # Declare all the rooms
@@ -38,6 +41,9 @@ room['treasure'].s_to = room['narrow']
 #
 
 # Make a new player object that is currently in the 'outside' room.
+from player import Player
+
+player1 = Player("Gorgik the Liberator", room["outside"])
 
 # Write a loop that:
 #
@@ -49,3 +55,18 @@ room['treasure'].s_to = room['narrow']
 # Print an error message if the movement isn't allowed.
 #
 # If the user enters "q", quit the game.
+
+while True:
+    for line in textwrap.wrap(player1.location.description):
+        print(line)
+    cmd_input = input(">").split(" ")
+    if cmd_input[0] == "q":
+        sys.exit()
+    elif cmd_input[0] in ["n", "e", "s", "w"]:
+        move_to = f"{cmd_input[0]}_to"
+        target_room = getattr(player1.location, move_to)
+        if target_room:
+            player1.location = target_room
+            print(f"\n{player1.location.name}:")
+        else:
+            print("You cannot go that way.")
