@@ -108,3 +108,20 @@ while True:
             print("You are carrying:")
             for i in player1.items:
                 print(i.name)
+    elif cmd_start == "look":
+        if len(cmd_input) == 1:
+            continue
+        else:
+            all_items = [*player1.items, *player1.current_room.items]
+            matches = parsers.name_in_list(cmd_input[1], all_items)
+            if matches["find_any"] == False:
+                print(f"You don't see a {cmd_input[1]}.")
+                continue
+            elif matches["more_spec"]:
+                print("Please be more specific. Which did you want to look at?")
+                for i in matches["found"]:
+                    print(i.name)
+                continue
+            else:
+                print(matches["found"][0].description)
+                continue
